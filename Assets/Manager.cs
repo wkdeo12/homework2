@@ -16,7 +16,7 @@ public struct Signup
     public string username;
     public string password;
 } 
-public struct Login
+public struct UserData
 {
     public string username;
     public string password;
@@ -25,13 +25,11 @@ public struct Login
 public class Manager : MonoBehaviour {
 
     public Text bt;
-    static Manager man;
+    public static Manager man;
     int chk = 0;
     public List<GameObject> listb;
-    public static string usernam;
-    public static string passwor;
+    
 
-    // Use this for initialization
 	void Awake ()
     {
         if(man == null)
@@ -48,6 +46,12 @@ public class Manager : MonoBehaviour {
 
     private void Start()
     {
+        Addsome();
+             
+    }
+
+    public void Addsome()
+    {
         listb = new List<GameObject>();
 
         for(int i = 1; i < 5; i++)
@@ -57,7 +61,6 @@ public class Manager : MonoBehaviour {
 
             listb.Add(bt);
         }
-             
     }
         
     private void Update()
@@ -92,11 +95,15 @@ public class Manager : MonoBehaviour {
             chk++;
         }
     }
+    public string un;
+    public string pw;
 
     public void click()
     {
         string username = listb[2].GetComponent<InputField>().text;
+        un = listb[2].GetComponent<InputField>().text;
         string password = listb[3].GetComponent<InputField>().text;
+        pw = listb[3].GetComponent<InputField>().text;
 
         if(chk < 20)
         {
@@ -108,10 +115,8 @@ public class Manager : MonoBehaviour {
             else
             {
                 Signup signupData = new Signup();
-                signupData.username = username;
-                usernam = username;
-                signupData.password = password;
-                passwor = password;
+                signupData.username = un;
+                signupData.password = pw;
                 chk += 20;
                 
                 StartCoroutine(uppass(signupData));
@@ -127,7 +132,7 @@ public class Manager : MonoBehaviour {
             }
             else
             {
-                Login loginData = new Login();
+                UserData loginData = new UserData();
                 loginData.username = username;
                 loginData.password = password;
                 StartCoroutine(inpass(loginData));
@@ -145,6 +150,7 @@ public class Manager : MonoBehaviour {
             www.method = "POST";
             www.SetRequestHeader("Content-Type", "application/json");
             yield return www.Send();
+            
             if(www.isNetworkError || www.isHttpError)
             {
                 Debug.Log(www.error);
@@ -159,21 +165,22 @@ public class Manager : MonoBehaviour {
 
 
     }
+    string setwww = "http://localhost:3000/users/signin";
     string loginwww = "http://localhost:3000/users/signin";
     string nickwww = "http://localhost:3000/users/Nickname";
+    string emptywww = "";
 
-    
 
-    IEnumerator inpass(Login logindata)
+    IEnumerator inpass(UserData logindata)
     {
-        
         string postData = JsonUtility.ToJson(logindata);
         byte[] sendData = Encoding.UTF8.GetBytes(postData);
-        using(UnityWebRequest www = UnityWebRequest.Put(loginwww, sendData))
+        using(UnityWebRequest www = UnityWebRequest.Put(setwww, sendData))
         {
             www.method = "POST";
             www.SetRequestHeader("Content-Type", "application/json");
             yield return www.Send();
+
             if(www.isNetworkError || www.isHttpError)
             {
                 Debug.Log(www.error);
@@ -183,10 +190,10 @@ public class Manager : MonoBehaviour {
                 string resultst = www.downloadHandler.text;
                 var reuslt = JsonUtility.FromJson<sResult>(resultst);
                 Debug.Log(resultst);
-                loginwww = "http://localhost:3000/users/Nickname";
+                setwww = nickwww;
                 SceneManager.LoadScene("2");
                 click();
-                chk = 0;
+                chk = 30;
             }
         }
     }
